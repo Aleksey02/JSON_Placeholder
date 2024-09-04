@@ -1,23 +1,22 @@
 import { defineStore } from 'pinia'
 import axios from 'axios'
 
-// Интерфейс для постов
-interface Post {
-  userId: number
-  id: number
-  title: string
-  body: string
+export interface Post {
+  userId: number;
+  id: number;
+  title: string;
+  body: string;
 }
 
-interface State {
-  allPosts: Post[]
-  posts: Post[]
-  loading: boolean
-  page: number
-  totalPages: number,
-  showModal: boolean,
-  orderingById: boolean,
-  currentUserId: number
+export interface State {
+  allPosts: Post[];
+  posts: Post[];
+  loading: boolean;
+  page: number;
+  totalPages: number;
+  showModal: boolean;
+  orderingById: boolean;
+  currentUserId: number;
 }
 
 // Определение хранилища
@@ -33,44 +32,25 @@ export const usePostsStore = defineStore('posts', {
     currentUserId: 0
   }),
   actions: {
-    async fetchAllPosts() {
+    async fetchAllPosts(): Promise<void> {
       try {
-        const response = await axios.get<Post[]>('https://jsonplaceholder.typicode.com/posts')
-        this.allPosts = response.data
-        this.totalPages = Math.ceil(this.allPosts.length / 10)
-        this.updatePosts()
-      } catch (error) {
-        console.error('Error fetching posts:', error)
+        const response = await axios.get<Post[]>('https://jsonplaceholder.typicode.com/posts');
+        this.allPosts = response.data;
+        this.totalPages = Math.ceil(this.allPosts.length / 10);
+        this.updatePosts();
+      } catch {
+        alert('Ошибка при загрузке постов');
       } finally {
-        this.loading = false
+        this.loading = false;
       }
     },
-    updatePosts() {
-      const start = (this.page - 1) * 10
-      const end = start + 10
-      this.posts = this.allPosts.slice(start, end)
+    updatePosts(): void {
+      const start = (this.page - 1) * 10;
+      const end = start + 10;
+      this.posts = this.allPosts.slice(start, end);
     },
-    nextPage() {
-      if (this.page < this.totalPages) {
-        this.loading = true
-        this.page++
-        this.updatePosts()
-        setTimeout(() => {
-          this.loading = false
-        },300)
-      }
-    },
-    prevPage() {
-      if (this.page > 1) {
-        this.loading = true
-        this.page--
-        this.updatePosts()
-        setTimeout(() => {
-          this.loading = false
-        },300)
-      }
-    },
-    addPost(title: string, body: string) {
+    
+    addPost(title: string, body: string): void {
       let userId = this.currentUserId == 0 ? this.allPosts.slice().sort((a, b) => b.userId - a.userId)[0].userId + 1 : this.currentUserId;
       let lastPostId = this.allPosts.slice().sort((a, b) => b.id - a.id)[0].id;
       let post = { 
@@ -88,14 +68,37 @@ export const usePostsStore = defineStore('posts', {
       this.updatePosts();
       this.totalPages = Math.ceil(this.allPosts.length / 10);
     },
-    sortPosts() {
-      this.orderingById = !this.orderingById
+    sortPosts(): void {
+      this.orderingById = !this.orderingById;
       if (this.orderingById) {
-        this.allPosts.sort((a, b) => a.id - b.id)
+        this.allPosts.sort((a, b) => a.id - b.id);
       } else {
-        this.allPosts.sort((a, b) => b.id - a.id)
+        this.allPosts.sort((a, b) => b.id - a.id);
       }
-      this.updatePosts()
+      this.updatePosts();
+    },
+    toggleModal(): void {
+      this.showModal = !this.showModal;
+    },
+    startLoading(): void {
+      this.loading = true;
+    },
+    endLoading(): void {
+      this.loading = false;
+    },
+    incrementPage(): void {
+      this.page++;
+    },
+    decrementPage(): void {
+      this.page--;
     }
+  },
+  getters: {
+    getPosts: (state): Post[] => state.posts,
+    getLoading: (state): boolean => state.loading,
+    getCurrentPage: (state): number => state.page,
+    getTotalPages: (state): number => state.totalPages,
+    isModalOpen: (state): boolean => state.showModal
   }
+
 })

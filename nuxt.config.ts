@@ -4,12 +4,12 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   modules: ['@pinia/nuxt', '@nuxtjs/tailwindcss'],
   pinia: {
-    storesDirs: ['./stores/**', './custom-folder/stores/**'],
+    storesDirs: ['./store/**', './custom-folder/store/**'],
   },
   postcss: {
     plugins: {
       tailwindcss: {},
       autoprefixer: {},
     }
-  }
+  },
 })
